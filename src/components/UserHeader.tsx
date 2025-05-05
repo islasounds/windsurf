@@ -45,11 +45,18 @@ export default function UserHeader({
               ))}
 
               <li>
-                <a href={"/api/auth/logout"}>
-                  <div className="hover:bg-gray-800 cursor-pointer px-2 py-2 rounded-lg transition duration-200 ease-in-out">
-                    Log Out
-                  </div>
-                </a>
+                <div 
+                  onClick={() => {
+                    // Eliminar datos de autenticación del localStorage
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('userData');
+                    // Redirigir a la página de login
+                    window.location.href = '/login';
+                  }}
+                  className="hover:bg-gray-800 cursor-pointer px-2 py-2 rounded-lg transition duration-200 ease-in-out"
+                >
+                  Log Out
+                </div>
               </li>
             </ul>
           </div>

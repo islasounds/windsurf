@@ -1,10 +1,11 @@
+"use client";
+
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ListButton from "./ListButton";
 import { pages } from "@/constants/nav";
 import Image from "next/image";
 import UserHeader from "./UserHeader";
-import { getSession } from "@/utils/cookies";
 import { ISession } from "@/types";
 
 export const Logo = () => (
@@ -13,12 +14,28 @@ export const Logo = () => (
   </Link>
 );
 
-export default async function Header() {
-  const session: ISession | null = getSession();
-  if (!session) return null;
-  const { user } = session;
+export default function Header() {
+  const [user, setUser] = useState<any>(null);
+  const [id, setId] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
 
-  const id = `${user?._id?.slice(0, 8).toUpperCase()}...`;
+  useEffect(() => {
+    // Obtener datos del usuario desde localStorage
+    const userDataStr = localStorage.getItem('userData');
+    if (userDataStr) {
+      try {
+        const userData = JSON.parse(userDataStr);
+        setUser(userData);
+        setId(`${userData?._id?.slice(0, 8).toUpperCase()}...`);
+      } catch (err) {
+        console.error("Error al parsear datos del usuario:", err);
+      }
+    }
+    setIsLoading(false);
+  }, []);
+
+  // Si está cargando o no hay usuario, no mostrar nada
+  if (isLoading || !user) return null;
 
   return (
     <div className="top-0 left-0 right-0 sticky flex flex-col z-50">

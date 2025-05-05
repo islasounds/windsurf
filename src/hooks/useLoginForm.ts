@@ -31,16 +31,21 @@ const useLoginForm = () => {
     setErrorMessage("");
 
     try {
+      console.log("Intentando iniciar sesión con:", formData.email);
       const response = await UserServices.loginUser(formData);
+      console.log("Respuesta de login:", response);
 
       if (response.status === 200 && response.data) {
-        // Guardar el token en una cookie del cliente
-        document.cookie = `token=${response.data.token}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Strict`;
+        // Guardar los datos de usuario y token en localStorage
+        localStorage.setItem('authToken', response.data.token);
+        localStorage.setItem('userData', JSON.stringify(response.data.user));
+        console.log("Datos guardados en localStorage");
         
         await postLog("User logged in", "info", { email: formData.email });
+        console.log("Log registrado, redirigiendo a /catalogo/productos");
         
-        // Redireccionar al catálogo de productos
-        router.push("/catalogo/productos");
+        // Redirigir directamente a la página de catálogo
+        window.location.href = "/catalogo/productos";
       } else {
         setErrorMessage(
           response?.data?.message ||

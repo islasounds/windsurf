@@ -216,13 +216,33 @@ export const UserServices = {
   getAllowedArtists: async (token?: string) => {
     try {
       // Usar datos de ejemplo en lugar de llamar a la API
-      console.log("Obteniendo artistas permitidos (simulado)");
+      console.log("Obteniendo artistas permitidos (simulado)", { token });
       
       // Simular un retraso para que parezca una llamada a la API real
       await new Promise(resolve => setTimeout(resolve, 130));
       
+      // Si se proporciona un token, intentar decodificarlo para obtener el ID de usuario
+      let userId = currentUserId; // Valor por defecto
+      
+      if (token) {
+        try {
+          // En un entorno real, decodificaríamos el token JWT
+          // Para simplificar, asumimos que el token es el ID de usuario o contiene el ID
+          console.log("Usando token proporcionado para autenticación");
+          
+          // Buscar un usuario que coincida con el token (simulando verificación de token)
+          const matchingUser = UserMockData.users.find(u => u._id === token || token.includes(u._id));
+          if (matchingUser) {
+            userId = matchingUser._id;
+            console.log("Usuario autenticado por token:", userId);
+          }
+        } catch (err) {
+          console.error("Error al procesar el token:", err);
+        }
+      }
+      
       // Obtener el usuario actual de los datos de ejemplo
-      const currentUser = UserMockData.findUserById(currentUserId);
+      const currentUser = UserMockData.findUserById(userId);
       
       if (!currentUser) {
         throw new Error("Usuario no encontrado");
@@ -321,13 +341,33 @@ export const UserServices = {
   getMyProducts: async (token?: string, limit = 10, page = 0) => {
     try {
       // Usar datos de ejemplo en lugar de llamar a la API
-      console.log("Obteniendo productos del usuario (simulado)");
+      console.log("Obteniendo productos del usuario (simulado)", { token });
       
       // Simular un retraso para que parezca una llamada a la API real
       await new Promise(resolve => setTimeout(resolve, 150));
       
+      // Si se proporciona un token, intentar decodificarlo para obtener el ID de usuario
+      let userId = currentUserId; // Valor por defecto
+      
+      if (token) {
+        try {
+          // En un entorno real, decodificaríamos el token JWT
+          // Para simplificar, asumimos que el token es el ID de usuario o contiene el ID
+          console.log("Usando token proporcionado para autenticación");
+          
+          // Buscar un usuario que coincida con el token (simulando verificación de token)
+          const matchingUser = UserMockData.users.find(u => u._id === token || token.includes(u._id));
+          if (matchingUser) {
+            userId = matchingUser._id;
+            console.log("Usuario autenticado por token:", userId);
+          }
+        } catch (err) {
+          console.error("Error al procesar el token:", err);
+        }
+      }
+      
       // Obtener el usuario actual de los datos de ejemplo
-      const currentUser = UserMockData.findUserById(currentUserId);
+      const currentUser = UserMockData.findUserById(userId);
       
       if (!currentUser) {
         throw new Error("Usuario no encontrado");
