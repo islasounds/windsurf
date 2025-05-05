@@ -11,7 +11,7 @@ const publicRoutes = new Set([
 ]);
 
 const getTokenFromCookies = (req: NextRequest) => {
-  const token = req.cookies.get("admin");
+  const token = req.cookies.get("token");
   return token ? token.value : null;
 };
 
@@ -50,7 +50,7 @@ export async function authMiddleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = getToken();
+  const token = getTokenFromCookies(req);
   if (!token) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";

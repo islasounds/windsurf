@@ -34,8 +34,13 @@ const useLoginForm = () => {
       const response = await UserServices.loginUser(formData);
 
       if (response.status === 200 && response.data) {
+        // Guardar el token en una cookie del cliente
+        document.cookie = `token=${response.data.token}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Strict`;
+        
         await postLog("User logged in", "info", { email: formData.email });
-        router.push("/");
+        
+        // Redireccionar al catálogo de productos
+        router.push("/catalogo/productos");
       } else {
         setErrorMessage(
           response?.data?.message ||
@@ -43,8 +48,9 @@ const useLoginForm = () => {
         );
       }
     } catch (error: any) {
+      console.error("Error de login:", error);
       setErrorMessage(
-        error?.response?.data?.message ||
+        error?.message ||
           "Un error inesperado ha ocurrido. Por favor, intenta de nuevo."
       );
     } finally {
