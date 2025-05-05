@@ -219,15 +219,16 @@ export const UserServices = {
       const allowedArtistIds = currentUser.allowedArtists || [];
       
       // Obtener los artistas completos de FugaMockData
-      const artists = allowedArtistIds.map(artistId => {
-        const artist = FugaMockData.artists.find(a => a.id.toString() === artistId);
-        return artist ? {
+      // Filtrar primero para eliminar los nulos y luego mapear para asegurar que el tipo sea correcto
+      const artists = allowedArtistIds
+        .map(artistId => FugaMockData.artists.find(a => a.id.toString() === artistId))
+        .filter((artist): artist is typeof FugaMockData.artists[0] => artist !== undefined)
+        .map(artist => ({
           id: artist.id,
           name: artist.name,
           spotify_uri: artist.spotify_uri,
           apple_id: artist.apple_id
-        } : null;
-      }).filter(Boolean);
+        }));
       
       return artists;
     } catch (error: any) {
@@ -306,18 +307,38 @@ export const UserServices = {
   },
   getMyProducts: async (token?: string, limit = 10, page = 0) => {
     try {
-      const response = await axiosInstance.get(`/api/products`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      return response.data;
+      // Usar datos de ejemplo en lugar de llamar a la API
+      console.log("Obteniendo productos del usuario (simulado)");
+      
+      // Simular un retraso para que parezca una llamada a la API real
+      await new Promise(resolve => setTimeout(resolve, 150));
+      
+      // Obtener el usuario actual de los datos de ejemplo
+      const currentUser = UserMockData.findUserById(currentUserId);
+      
+      if (!currentUser) {
+        throw new Error("Usuario no encontrado");
+      }
+      
+      // Obtener los IDs de artistas permitidos para el usuario actual
+      const allowedArtistIds = currentUser.allowedArtists || [];
+      
+      // Filtrar productos por artistas permitidos
+      const myProducts = FugaMockData.products.filter(product => 
+        allowedArtistIds.includes(product.artist_id.toString())
+      ).map(product => ({
+        id: product.id,
+        name: product.name
+      }));
+      
+      // Aplicar paginación
+      const startIndex = page * limit;
+      const endIndex = startIndex + limit;
+      const paginatedProducts = myProducts.slice(startIndex, endIndex);
+      
+      return paginatedProducts;
     } catch (error: any) {
-      console.error(
-        "Error fetching my products:",
-        error.response ? error.response.data : error.message
-      );
+      console.error("Error obteniendo productos (simulado):", error.message);
       throw error;
     }
   },

@@ -1,5 +1,20 @@
 {
-  "extends": "next",
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "react", "react-hooks"],
   "rules": {
+    "react/react-in-jsx-scope": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
   }
 }
