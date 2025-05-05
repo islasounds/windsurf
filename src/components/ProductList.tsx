@@ -1,5 +1,5 @@
 "use client";
-import { UserServices } from "@/services/UserServices";
+import { FugaMockData } from "@/services/FugaMockData";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
@@ -212,9 +212,35 @@ const ProductList: React.FC<{
   }, []);
 
   const createProduct = async () => {
-    const data = await UserServices.createProduct(newProductName);
-    if (data.id) {
-      router.push(`/producto/${data.id}`);
+    try {
+      // Simular la creación de un producto localmente
+      console.log("Creando producto localmente:", newProductName);
+      
+      // Generar un ID único para el nuevo producto
+      const newId = Math.max(...FugaMockData.products.map(p => p.id)) + 1;
+      
+      // Crear un nuevo producto simulado
+      const newProduct = {
+        id: newId,
+        name: newProductName.name,
+        artist_id: newProductName.artists[0]?.id || "2001",
+        artist_name: allowedArtists.find((a: Artist) => a.id === newProductName.artists[0]?.id)?.name || "Artista Default",
+        state: "DRAFT",
+        release_format_type: "SINGLE",
+        label_name: "Label Default",
+        genre: "Pop",
+        original_release_date: new Date().toISOString(),
+        cover_image: { vault_hook: null }
+      };
+      
+      // Simular un pequeño retraso
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Redirigir a la página del producto
+      router.push(`/producto/${newId}`);
+    } catch (error) {
+      console.error("Error al crear producto:", error);
+      alert("Error al crear el producto. Inténtalo de nuevo.");
     }
   };
 
