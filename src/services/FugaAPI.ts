@@ -179,31 +179,31 @@ export const FugaAPI = {
       // Datos de ejemplo para géneros, subgéneros y formatos
       const genres = {
         data: [
-          { id: 1, name: "Pop" },
-          { id: 2, name: "Rock" },
-          { id: 3, name: "Hip Hop" },
-          { id: 4, name: "Electrónica" },
-          { id: 5, name: "R&B" },
-          { id: 6, name: "Jazz" },
-          { id: 7, name: "Clásica" },
-          { id: 8, name: "Reggaeton" },
-          { id: 9, name: "Latina" },
-          { id: 10, name: "Folk" }
+          { id: "1", name: "Pop" },
+          { id: "2", name: "Rock" },
+          { id: "3", name: "Hip Hop" },
+          { id: "4", name: "Electrónica" },
+          { id: "5", name: "R&B" },
+          { id: "6", name: "Jazz" },
+          { id: "7", name: "Clásica" },
+          { id: "8", name: "Reggaeton" },
+          { id: "9", name: "Latina" },
+          { id: "10", name: "Folk" }
         ]
       };
       
       const subgenres = {
         data: [
-          { id: 101, name: "Electropop", genre_id: 1 },
-          { id: 102, name: "Dance Pop", genre_id: 1 },
-          { id: 201, name: "Indie Rock", genre_id: 2 },
-          { id: 202, name: "Hard Rock", genre_id: 2 },
-          { id: 301, name: "Trap", genre_id: 3 },
-          { id: 302, name: "Rap", genre_id: 3 },
-          { id: 401, name: "House", genre_id: 4 },
-          { id: 402, name: "Techno", genre_id: 4 },
-          { id: 901, name: "Salsa", genre_id: 9 },
-          { id: 902, name: "Bachata", genre_id: 9 }
+          { id: "101", name: "Electropop", genre_id: "1" },
+          { id: "102", name: "Dance Pop", genre_id: "1" },
+          { id: "201", name: "Indie Rock", genre_id: "2" },
+          { id: "202", name: "Hard Rock", genre_id: "2" },
+          { id: "301", name: "Trap", genre_id: "3" },
+          { id: "302", name: "Rap", genre_id: "3" },
+          { id: "401", name: "House", genre_id: "4" },
+          { id: "402", name: "Techno", genre_id: "4" },
+          { id: "901", name: "Salsa", genre_id: "9" },
+          { id: "902", name: "Bachata", genre_id: "9" }
         ]
       };
       
@@ -295,6 +295,13 @@ export const FugaAPI = {
           name: product.artist_name,
           id: product.artist_id
         },
+        // Agregar la propiedad artists que se espera en la ruta de API
+        artists: [
+          {
+            id: product.artist_id.toString(),
+            name: product.artist_name
+          }
+        ],
         territories: [
           { code: "ES", name: "España" },
           { code: "US", name: "Estados Unidos" },
@@ -357,7 +364,13 @@ export const FugaAPI = {
       const endIndex = startIndex + pageSize;
       const paginatedAssets = assets.slice(startIndex, endIndex);
       
-      return await simulateAsync(paginatedAssets);
+      // Devolver un objeto con una propiedad asset que contenga los assets
+      return await simulateAsync({
+        asset: paginatedAssets,
+        total: assets.length,
+        page: page,
+        page_size: pageSize
+      });
     } catch (error: any) {
       console.error("Error obteniendo mis assets de ejemplo");
       throw error;
@@ -425,6 +438,7 @@ export const FugaAPI = {
   getInfo: async () => {
     try {
       return await simulateAsync({
+        // Información del usuario y compañía
         user: {
           name: "Usuario Demo",
           email: "demo@ejemplo.com"
@@ -437,7 +451,43 @@ export const FugaAPI = {
           products: FugaMockData.products.length,
           artists: FugaMockData.artists.length,
           assets: FugaMockData.assets.length
-        }
+        },
+        // Datos requeridos por AssetForm
+        genres: [
+          { id: "1", name: "Pop" },
+          { id: "2", name: "Rock" },
+          { id: "3", name: "Hip-Hop" },
+          { id: "4", name: "Electrónica" },
+          { id: "5", name: "Clásica" },
+          { id: "6", name: "Jazz" },
+          { id: "7", name: "R&B" },
+          { id: "8", name: "Reggaeton" },
+          { id: "9", name: "Latina" },
+          { id: "10", name: "Indie" }
+        ],
+        subgenres: [
+          { id: "101", name: "Pop Rock" },
+          { id: "102", name: "Electropop" },
+          { id: "201", name: "Rock Alternativo" },
+          { id: "202", name: "Hard Rock" },
+          { id: "301", name: "Trap" },
+          { id: "302", name: "Rap" },
+          { id: "401", name: "House" },
+          { id: "402", name: "Techno" },
+          { id: "501", name: "Barroco" },
+          { id: "502", name: "Romántica" }
+        ],
+        audio_locales: [
+          { id: "es", name: "Español" },
+          { id: "en", name: "Inglés" },
+          { id: "fr", name: "Francés" },
+          { id: "pt", name: "Portugués" },
+          { id: "it", name: "Italiano" },
+          { id: "de", name: "Alemán" },
+          { id: "ja", name: "Japonés" },
+          { id: "ko", name: "Coreano" },
+          { id: "zh", name: "Chino" }
+        ]
       });
     } catch (error: any) {
       console.error("Error obteniendo información general de ejemplo");
@@ -631,6 +681,51 @@ export const FugaAPI = {
       });
     } catch (error: any) {
       console.error("Error generando ISRC de ejemplo");
+      throw error;
+    }
+  },
+  
+  // Eliminar archivo
+  deleteFile: async (assetId: string, fileId: string) => {
+    try {
+      // Buscar el asset en los datos de ejemplo
+      const asset = FugaMockData.assets.find(a => a.id.toString() === assetId);
+      
+      if (!asset) {
+        throw new Error(`Asset con ID ${assetId} no encontrado`);
+      }
+      
+      // Simular la eliminación del archivo
+      return await simulateAsync({
+        success: true,
+        message: `Archivo con ID ${fileId} eliminado correctamente del asset ${assetId}`
+      });
+    } catch (error: any) {
+      console.error("Error eliminando archivo de ejemplo");
+      throw error;
+    }
+  },
+  
+  // Subir archivo
+  uploadFile: async (file: File, totalFileSize: number, assetId: string, fileName: string, fileType: string, chunkSize: number = 0) => {
+    try {
+      // Buscar el asset en los datos de ejemplo
+      const asset = FugaMockData.assets.find(a => a.id.toString() === assetId);
+      
+      if (!asset) {
+        throw new Error(`Asset con ID ${assetId} no encontrado`);
+      }
+      
+      // Simular la subida del archivo
+      console.log(`Simulando subida de archivo ${fileName} para el asset ${assetId}`);
+      console.log(`Tipo de archivo: ${fileType}, tamaño total: ${totalFileSize} bytes`);
+      
+      // Generar un UUID aleatorio para la subida
+      const uploadUuid = 'upload-' + Math.random().toString(36).substring(2, 15);
+      
+      return await simulateAsync(uploadUuid, 500);
+    } catch (error: any) {
+      console.error("Error subiendo archivo de ejemplo");
       throw error;
     }
   }

@@ -7,7 +7,7 @@ import AllowedArtistsAdmin from "@/components/AllowedArtistsAdmin";
 import DeleteUser from "@/components/DeleteUser";
 
 export default async function User({ params }: { params: { id: string } }) {
-  const { data } = await AdminServices.getUserById(params.id);
+  const userData = await AdminServices.getUserById(params.id);
 
   const allArtists = await AdminServices.getAllArtists();
   const currentArtists = await AdminServices.getArtistsOfUser(params.id);
@@ -17,7 +17,7 @@ export default async function User({ params }: { params: { id: string } }) {
       <div className="container mx-auto max-w-4xl md:p-8 flex flex-col gap-4 p-2">
         <div className="h-32 flex items-center  bg-white p-4 md:p-8 rounded-md shadow-md backgroundPattern gap-2 md:gap-8">
           <Image
-            src={data.picture}
+            src={userData.picture}
             alt="avatar"
             width={100}
             height={100}
@@ -25,11 +25,11 @@ export default async function User({ params }: { params: { id: string } }) {
           />
 
           <div>
-            <h2 className="text-2xl font-bold">{data.name}</h2>
-            <p className="text-gray-500 text-md md:text-lg">{data.email}</p>
+            <h2 className="text-2xl font-bold">{userData.name}</h2>
+            <p className="text-gray-500 text-md md:text-lg">{userData.email}</p>
           </div>
         </div>
-        {/* <UserForm initalMe={data} /> */}
+        {/* <UserForm initalMe={userData} /> */}
 
         <div className="container mx-auto max-w-4xl flex flex-col gap-4">
           <div className="bg-white p-4 md:p-8 rounded-md shadow-md gap-2 md:gap-8">

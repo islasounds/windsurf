@@ -1,5 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
+// Definición del esquema para los tokens de API
 const tokenSchema = new mongoose.Schema({
   token: { type: String, required: true },
   expiresAt: { type: Date, required: true },

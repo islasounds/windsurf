@@ -11,7 +11,7 @@ export default async function UsersPage() {
     return <div>Unauthorized</div>;
   }
 
-  const { data } = await UserServices.getSubaccounts(token);
+  const subaccounts = await UserServices.getSubaccounts(token);
 
   return (
     <div>
@@ -24,7 +24,7 @@ export default async function UsersPage() {
       <div className="p-2 md:p-4">
         <CreateUserForm />
 
-        <UserTable users={data} />
+        <UserTable users={subaccounts} />
       </div>
     </div>
   );

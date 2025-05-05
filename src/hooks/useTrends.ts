@@ -19,8 +19,8 @@ interface TrendsFilter {
 
 const calculateDateRange = (range: string) => {
   const now = new Date();
-  let startDate = new Date();
-  let endDate = now;
+  const startDate = new Date();
+  const endDate = now;
 
   switch (range) {
     case "last_week":

@@ -37,7 +37,7 @@ interface Asset {
     isrc: string | null;
     vaultItem: Record<string, any>; // Adjust based on vaultItem's structure
   };
-  artists: { id: number; name: string; primary?: boolean }[];
+  artists: { id: number | string; name: string; primary?: boolean }[];
 }
 
 interface AssetFormProps {
@@ -47,7 +47,7 @@ interface AssetFormProps {
     subgenres: { id: string; name: string }[];
     audio_locales: { id: string; name: string }[];
   };
-  allowedArtists: { id: number; name: string; primary?: boolean }[];
+  allowedArtists: { id: number | string; name: string; primary?: boolean; spotify_uri?: string; apple_id?: string }[];
 }
 
 const useAssetForm = (asset: Asset) => {

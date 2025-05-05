@@ -26,12 +26,15 @@ ChartJS.register(
 );
 
 interface Artist {
-  id: number;
+  id: number | string;
   name: string;
+  primary?: boolean;
+  spotify_uri?: string;
+  apple_id?: string;
 }
 
 interface Product {
-  id: number;
+  id: number | string;
   name: string;
 }
 

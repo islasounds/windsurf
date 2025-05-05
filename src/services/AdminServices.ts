@@ -32,8 +32,18 @@ export const AdminServices = {
       // Simular un retraso para que parezca una llamada a la API real
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      // Devolver todos los usuarios excepto el administrador principal
-      return UserMockData.users;
+      // Transformar los datos al formato esperado por el componente UserTable
+      const formattedUsers = UserMockData.users.map(user => ({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        picture: user.picture,
+        status: "active", // Asumimos que todos los usuarios están activos
+        role: user.role,
+        permissions: [] // Asumimos que no hay permisos específicos
+      }));
+      
+      return formattedUsers;
     } catch (error: any) {
       console.error("Error fetching users:", error.message);
       throw error;

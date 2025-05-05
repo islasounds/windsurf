@@ -170,9 +170,22 @@ export const UserServices = {
       }
       
       // Obtener las subcuentas del usuario actual
-      const subaccounts = UserMockData.getSubaccounts(currentUserId);
+      const rawSubaccounts = UserMockData.getSubaccounts(currentUserId);
       
-      return subaccounts;
+      // Transformar los datos al formato esperado por el componente UserTable
+      const formattedSubaccounts = rawSubaccounts
+        .filter(user => user !== undefined)
+        .map(user => ({
+          _id: user!._id,
+          name: user!.name,
+          email: user!.email,
+          picture: user!.picture,
+          status: "active", // Asumimos que todos los usuarios están activos
+          role: user!.role,
+          permissions: [] // Asumimos que no hay permisos específicos
+        }));
+      
+      return formattedSubaccounts;
     } catch (error: any) {
       console.error("Error obteniendo subcuentas (simulado):", error.message);
       throw error;
@@ -218,14 +231,14 @@ export const UserServices = {
       // Obtener los IDs de artistas permitidos para el usuario actual
       const allowedArtistIds = currentUser.allowedArtists || [];
       
-      // Obtener los artistas completos de FugaMockData
       // Filtrar primero para eliminar los nulos y luego mapear para asegurar que el tipo sea correcto
       const artists = allowedArtistIds
         .map(artistId => FugaMockData.artists.find(a => a.id.toString() === artistId))
         .filter((artist): artist is typeof FugaMockData.artists[0] => artist !== undefined)
         .map(artist => ({
-          id: artist.id,
+          id: artist.id.toString(), // Convertir a string para compatibilidad
           name: artist.name,
+          primary: false, // Añadir propiedad primary requerida por ProductForm
           spotify_uri: artist.spotify_uri,
           apple_id: artist.apple_id
         }));
@@ -328,7 +341,25 @@ export const UserServices = {
         allowedArtistIds.includes(product.artist_id.toString())
       ).map(product => ({
         id: product.id,
-        name: product.name
+        name: product.name,
+        upc: product.upc || null,
+        catalog_number: product.catalog_number || null,
+        suborg_state: product.state || "DRAFT",
+        state: product.state || "DRAFT",
+        label: { id: 1, name: product.label_name || "Label Default" },
+        consumer_release_date: product.original_release_date || null,
+        added_date: product.original_release_date || null, // Usando original_release_date como added_date
+        release_format_type: product.release_format_type || "SINGLE",
+        catalog_tier: "STANDARD",
+        genre: { id: "1", name: product.genre || "Pop" },
+        display_artist: product.artist_name || "Unknown Artist",
+        cover_image: {
+          id: 1,
+          has_uploaded: !!product.cover_image.vault_hook,
+          vault_hook: product.cover_image.vault_hook || null,
+          resolution_width: 1000,
+          resolution_height: 1000
+        }
       }));
       
       // Aplicar paginación
