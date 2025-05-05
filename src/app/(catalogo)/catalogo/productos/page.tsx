@@ -1,103 +1,79 @@
 "use client";
 
 import { FugaMockData } from "@/services/FugaMockData";
-import ProductList from "@/components/ProductList";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
-// Definir interfaces para los tipos de datos
-interface Product {
-  id: number;
-  name: string;
-  upc: string | null;
-  catalog_number: string | null;
-  suborg_state: string;
-  state: string;
-  label: { id: number; name: string };
-  consumer_release_date: string | null;
-  added_date: string | null;
-  release_format_type: string;
-  catalog_tier: string;
-  genre: { id: string; name: string };
-  display_artist: string;
-  cover_image: {
-    id: number;
-    has_uploaded: boolean;
-    vault_hook: string | null;
-    resolution_width: number;
-    resolution_height: number;
-  };
-}
-
-interface Artist {
-  id: string;
-  name: string;
-  primary: boolean;
-  spotify_uri: string;
-  apple_id: string;
-}
-
+// Página de productos simplificada sin dependencias complejas
 export default function Productos() {
-  const [myProducts, setMyProducts] = useState<Product[]>([]);
-  const [allowedArtists, setAllowedArtists] = useState<Artist[]>([]);
+  // Definir la interfaz para el tipo de producto
+  interface Product {
+    id: number;
+    name: string;
+    artist_id: number;
+    artist_name: string;
+    upc: string;
+    state: string;
+    label_name: string;
+    release_format_type: string;
+    original_release_date: string;
+    genre: string;
+    subgenre: string;
+    parental_advisory: boolean;
+    catalog_number: string;
+    cover_image: { vault_hook: string | null };
+    assets: any[];
+  }
+  
+  const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simular carga de datos
-    setTimeout(() => {
-      try {
-        // Generar productos de ejemplo directamente desde FugaMockData
-        const products = FugaMockData.products.map(product => ({
-          id: product.id,
-          name: product.name,
-          upc: product.upc || null,
-          catalog_number: product.catalog_number || null,
-          suborg_state: product.state || "DRAFT",
-          state: product.state || "DRAFT",
-          label: { id: 1, name: product.label_name || "Label Default" },
-          consumer_release_date: product.original_release_date || null,
-          added_date: product.original_release_date || null,
-          release_format_type: product.release_format_type || "SINGLE",
-          catalog_tier: "STANDARD",
-          genre: { id: "1", name: product.genre || "Pop" },
-          display_artist: product.artist_name || "Unknown Artist",
-          cover_image: {
-            id: 1,
-            has_uploaded: !!product.cover_image.vault_hook,
-            vault_hook: product.cover_image.vault_hook || null,
-            resolution_width: 1000,
-            resolution_height: 1000
-          }
-        }));
-        
-        // Generar artistas de ejemplo
-        const artists = FugaMockData.artists.map(artist => ({
-          id: artist.id.toString(),
-          name: artist.name,
-          primary: false,
-          spotify_uri: artist.spotify_uri,
-          apple_id: artist.apple_id
-        }));
-        
-        setMyProducts(products);
-        setAllowedArtists(artists);
+    // Cargar datos de ejemplo directamente
+    try {
+      // Pequeño retraso para simular carga
+      setTimeout(() => {
+        // Obtener productos directamente de FugaMockData
+        setProducts(FugaMockData.products);
         setIsLoading(false);
-        
-        console.log("Datos de ejemplo cargados correctamente");
-      } catch (err) {
-        console.error("Error al cargar datos de ejemplo:", err);
-        setIsLoading(false);
-      }
-    }, 500); // Simular un pequeño retraso
+        console.log("Productos cargados correctamente", FugaMockData.products.length);
+      }, 300);
+    } catch (error) {
+      console.error("Error al cargar productos:", error);
+      setIsLoading(false);
+    }
   }, []);
 
   if (isLoading) {
-    return <div className="flex justify-center items-center min-h-screen">Cargando catálogo...</div>;
+    return (
+      <div className="p-8 text-center">
+        <h1 className="text-2xl font-bold mb-4">Cargando productos...</h1>
+      </div>
+    );
   }
 
   return (
-    <ProductList
-      initialProducts={myProducts}
-      allowedArtists={allowedArtists}
-    />
+    <div className="p-8">
+      <h1 className="text-2xl font-bold mb-6">Catálogo de Productos</h1>
+      
+      {products.length === 0 ? (
+        <p className="text-gray-500">No hay productos disponibles.</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.map((product) => (
+            <div key={product.id} className="border rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow">
+              <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
+              <p className="text-gray-600 mb-2">Artista: {product.artist_name}</p>
+              <p className="text-gray-600 mb-2">Estado: {product.state || "DRAFT"}</p>
+              <p className="text-gray-600 mb-4">Género: {product.genre || "No especificado"}</p>
+              
+              <Link href={`/producto/${product.id}`} className="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                Ver detalles
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
