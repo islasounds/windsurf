@@ -1,0 +1,770 @@
+/**
+ * API de FUGA simulada
+ * 
+ * Este archivo proporciona una implementación simulada de la API de FUGA
+ * utilizando datos de ejemplo en lugar de hacer llamadas reales a la API.
+ * 
+ * Para uso local y demostración sin dependencias externas.
+ */
+
+/**
+ * API de FUGA simulada
+ * 
+ * Este archivo proporciona una implementación simulada de la API de FUGA
+ * utilizando datos de ejemplo en lugar de hacer llamadas reales a la API.
+ * 
+ * Para uso local y demostración sin dependencias externas.
+ */
+
+import { FugaMockData } from "./FugaMockData";
+
+// Definición de tipos para evitar errores
+interface GetTrendsParams {
+  selection_type: string;
+  sale_type: string;
+  start_date: string;
+  end_date: string;
+  product_id?: number;
+  artist_id?: number;
+  asset_id?: number;
+  asset_ids?: number[];
+  release_project_id?: number;
+  territory_id?: string;
+  dsp_id?: number;
+}
+
+// Constantes
+const API_URL = "https://fugamusic.com/api/v2";
+
+interface GetTrendsParams {
+  selection_type: string; // e.g., 'dsp', 'artist', etc.
+  sale_type: string; // e.g., 'stream', 'download', etc.
+  start_date: string; // e.g., 'yyyy-mm-dd'
+  end_date: string; // e.g., 'yyyy-mm-dd'
+  product_id?: number; // optional: filter by product ID
+  artist_id?: number; // optional: filter by artist ID
+  asset_id?: number; // optional: filter by asset ID
+  asset_ids?: number[]; // optional: array of asset IDs
+  release_project_id?: number; // optional: release project ID
+  territory_id?: string; // optional: territory filter
+  dsp_id?: number; // optional: filter by DSP
+}
+
+const axiosInstance = axios.create({
+  baseURL: API_URL,
+  timeout: 0,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+const addImage = async (response: any) => {
+  try {
+    const imageUrl = `https://fugamusic.com/ui-only/v2/products/${response.data.id}/image/MUSE_TILES_VIEW`;
+    // const imageUrl = `/products/${id}/image/muse_header_view`;
+    console.log("Fetching cover image:", imageUrl);
+
+    // Fetch the image as binary data
+    const base64Response = await axiosInstance.get(imageUrl, {
+      responseType: "arraybuffer",
+    });
+
+    console.log("Base64 response:", base64Response);
+
+    // Convert the binary data to a Base64 string
+    const coverBase64 = await Buffer.from(base64Response.data).toString(
+      "base64"
+    );
+
+    // Add/overwrite the cover_image property in response.data4
+    const newProduct = {
+      ...response.data,
+      cover_image: {
+        ...response.data.cover_image, // Preserve any existing properties in cover_image
+        vault_hook: `data:image/jpeg;base64,${coverBase64}`, // Add or overwrite the vault_hook property
+      },
+    };
+
+    return newProduct;
+  } catch (error: any) {
+    console.error("Error fetching cover image:", error.message);
+    return response.data;
+  }
+};
+
+export const FugaAPI = {
+  getToken: async () => {
+    try {
+      // Simulando un token de autenticación
+      return "mock-token-12345";
+    } catch (error: any) {
+      console.error("Error simulando token de autenticación");
+      throw error;
+    }
+  },
+
+  getProducts: async ({ page = 0, pageSize = 100, artistId = "" }) => {
+    try {
+      // Simulando datos de productos desde los datos de ejemplo
+      let products = [...FugaMockData.products];
+      
+      // Filtrar por artistId si se proporciona
+      if (artistId) {
+        products = products.filter(product => product.artist_id.toString() === artistId);
+      }
+      
+      // Simular paginación
+      const startIndex = page * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedProducts = products.slice(startIndex, endIndex);
+      
+      return paginatedProducts;
+    } catch (error: any) {
+      console.error("Error obteniendo productos de ejemplo");
+      throw error;
+    }
+  },
+  getArtists: async ({ page = 0, pageSize = 20 }) => {
+    try {
+      // Simulando datos de artistas desde los datos de ejemplo
+      const artists = FugaMockData.artists;
+      
+      // Simular paginación
+      const startIndex = page * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedArtists = artists.slice(startIndex, endIndex);
+      
+      // Formato similar a la respuesta de la API real
+      return {
+        artist: paginatedArtists,
+        total: artists.length,
+        page: page,
+        page_size: pageSize
+      };
+    } catch (error: any) {
+      console.error("Error obteniendo artistas de ejemplo");
+      throw error;
+    }
+  },
+  createProduct: async (productData: any) => {
+    try {
+      const response = await axiosInstance.post("/products", productData);
+
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Error creating product:",
+        error.response ? error.response.data : error.message
+      );
+      throw error;
+    }
+  },
+  createArtist: async (artistData: any) => {
+    try {
+      const response = await axiosInstance.post("/artists", artistData);
+
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Error creating artist:",
+        error.response ? error.response.data : error.message
+      );
+      throw error;
+    }
+  },
+  deleteArtist: async (id: string) => {
+    try {
+      const response = await axiosInstance.delete(`/artists/${id}`);
+
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Error deleting artist:",
+        error.response ? error.response.data : error.message
+      );
+      throw error;
+    }
+  },
+  getInfoProduct: async (id: string, token?: string) => {
+    try {
+      // Datos de ejemplo para géneros, subgéneros y formatos
+      const genres = {
+        data: [
+          { id: 1, name: "Pop" },
+          { id: 2, name: "Rock" },
+          { id: 3, name: "Hip Hop" },
+          { id: 4, name: "Electrónica" },
+          { id: 5, name: "R&B" },
+          { id: 6, name: "Jazz" },
+          { id: 7, name: "Clásica" },
+          { id: 8, name: "Reggaeton" },
+          { id: 9, name: "Latina" },
+          { id: 10, name: "Folk" }
+        ]
+      };
+      
+      const subgenres = {
+        data: [
+          { id: 101, name: "Electropop", genre_id: 1 },
+          { id: 102, name: "Dance Pop", genre_id: 1 },
+          { id: 201, name: "Indie Rock", genre_id: 2 },
+          { id: 202, name: "Hard Rock", genre_id: 2 },
+          { id: 301, name: "Trap", genre_id: 3 },
+          { id: 302, name: "Rap", genre_id: 3 },
+          { id: 401, name: "House", genre_id: 4 },
+          { id: 402, name: "Techno", genre_id: 4 },
+          { id: 901, name: "Salsa", genre_id: 9 },
+          { id: 902, name: "Bachata", genre_id: 9 }
+        ]
+      };
+      
+      const formats = {
+        data: [
+          { id: 1, name: "ALBUM" },
+          { id: 2, name: "EP" },
+          { id: 3, name: "SINGLE" },
+          { id: 4, name: "BOXSET" }
+        ]
+      };
+      
+      // Buscar el producto en los datos de ejemplo si se proporciona un ID
+      let productData = {};
+      if (id && id !== "new") {
+        const product = FugaMockData.products.find(p => p.id.toString() === id);
+        if (product) {
+          // Buscar los assets asociados a este producto
+          const assets = FugaMockData.assets.filter(a => a.product_id.toString() === id);
+          
+          productData = {
+            product: {
+              ...product,
+              assets: assets,
+              release_format: {
+                name: product.release_format_type
+              },
+              label: {
+                name: product.label_name
+              },
+              primary_artist: {
+                name: product.artist_name,
+                id: product.artist_id
+              },
+              territories: [
+                { code: "ES", name: "España" },
+                { code: "US", name: "Estados Unidos" },
+                { code: "MX", name: "México" },
+                { code: "AR", name: "Argentina" },
+                { code: "CO", name: "Colombia" }
+              ],
+              state: {
+                name: product.state
+              }
+            }
+          };
+        }
+      }
+      
+      const initialProductData = {
+        genres: genres.data,
+        subgenres: subgenres.data,
+        formats: formats.data,
+        ...productData
+      };
+
+      return initialProductData;
+    } catch (error: any) {
+      console.error("Error obteniendo información del producto de ejemplo");
+      throw error;
+    }
+  },
+  getProductById: async (id: string, token?: string) => {
+    try {
+      // Buscar el producto en los datos de ejemplo
+      const product = FugaMockData.products.find(p => p.id.toString() === id);
+      
+      if (!product) {
+        console.error(`Producto con ID ${id} no encontrado`);
+        return null;
+      }
+      
+      // Buscar los assets asociados a este producto
+      const assets = FugaMockData.assets.filter(a => a.product_id.toString() === id);
+      
+      // Crear una respuesta similar a la de la API real
+      const response = {
+        ...product,
+        assets: assets,
+        release_format: {
+          name: product.release_format_type
+        },
+        label: {
+          name: product.label_name
+        },
+        primary_artist: {
+          name: product.artist_name,
+          id: product.artist_id
+        },
+        territories: [
+          { code: "ES", name: "España" },
+          { code: "US", name: "Estados Unidos" },
+          { code: "MX", name: "México" },
+          { code: "AR", name: "Argentina" },
+          { code: "CO", name: "Colombia" }
+        ],
+        state: {
+          name: product.state
+        }
+      };
+      
+      return response;
+    } catch (error: any) {
+      console.error("Error obteniendo producto por ID de ejemplo");
+      throw error;
+    }
+  },
+  getAssets: async (productId: string) => {
+    try {
+      const response = await axiosInstance.get(`/products/${productId}/assets`);
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Error fetching assets:",
+        error.response ? error.response.data : error.message
+      );
+      throw error;
+    }
+  },
+
+  createAsset: async (productId: string, assetData: any) => {
+    try {
+      const response = await axiosInstance.post(
+        `/products/${productId}/assets`,
+        assetData
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Error creating asset:",
+        error.response ? error.response.data : error.message
+      );
+      throw error;
+    }
+  },
+
+  uploadFile: async (
+    file: File,
+    totalfilesize: number,
+    assetId: string,
+    filename: string,
+    type = "audio",
+    chunksize?: number,
+    concurrency = 5 // Limit concurrent uploads to avoid overloading the server
+  ) => {
+    try {
+      // Start upload and get UUID
+
+      const { data: startData } = await axiosInstance.post(
+        `${API_URL}/upload/start`,
+        {
+          id: Number(assetId),
+          type: type,
+        }
+      );
+
+      const uuid = startData?.id;
+
+      if (!uuid) {
+        throw new Error("Failed to start upload");
+      }
+
+      console.log("Upload UUID:", uuid);
+
+      // If no chunksize provided, upload entire file at once
+      if (!chunksize) {
+        const formData = new FormData();
+        formData.append("uuid", uuid);
+        formData.append("filename", filename);
+        formData.append("totalfilesize", totalfilesize.toString());
+        formData.append("partindex", "0");
+        formData.append("partbyteoffset", "0");
+        formData.append("totalparts", "1");
+        formData.append("file", file);
+
+        console.log("Uploading entire file");
+
+        const response = await axiosInstance.post(
+          `${API_URL}/upload`,
+          formData,
+          {
+            timeout: 0,
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        console.log("Upload response:", response.data);
+
+        const finish = await axiosInstance.post(`${API_URL}/upload/finish`, {
+          uuid,
+        });
+
+        return NextResponse.json(finish.data);
+      }
+
+      const totalparts = Math.ceil(totalfilesize / chunksize);
+
+      // Handle chunked upload
+      console.log("Starting chunked upload");
+
+      // Create an array of chunk upload promises
+      const uploadChunk = async (i: number) => {
+        const start = i * chunksize;
+        const end = Math.min(start + chunksize, totalfilesize);
+        const chunk = file.slice(start, end);
+
+        const formData = new FormData();
+        formData.append("uuid", uuid);
+        formData.append("filename", file.name || filename || "file");
+        formData.append("totalfilesize", totalfilesize.toString());
+        formData.append("partindex", i.toString());
+        formData.append("partbyteoffset", start.toString());
+        formData.append("totalparts", totalparts.toString());
+        formData.append("chunksize", chunksize.toString());
+        formData.append("file", chunk);
+
+        console.log(`Uploading chunk ${i + 1}/${totalparts}`);
+        return axiosInstance.post(`${API_URL}/upload`, formData, {
+          timeout: 0,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      };
+
+      // Limit concurrency
+      const chunks = Array.from({ length: totalparts }, (_, i) => i);
+      const concurrentUploads = async () => {
+        const results = [];
+        while (chunks.length > 0) {
+          const batch = chunks.splice(0, concurrency).map(uploadChunk);
+          results.push(...(await Promise.all(batch)));
+        }
+        return results;
+      };
+
+      await concurrentUploads();
+
+      // Finish upload
+      console.log("Finalizing upload");
+      const finish = await axiosInstance.post(`${API_URL}/upload/finish`, {
+        uuid,
+      });
+
+      console.log("Upload finished:", finish.data);
+
+      return NextResponse.json({ success: true, message: "File uploaded" });
+    } catch (error: any) {
+      console.error(
+        "Error uploading file:",
+        error.response ? error.response.data : error.message
+      );
+      throw error;
+    }
+  },
+
+  getMyAssets: async ({ page = 0, pageSize = 100 }) => {
+    try {
+      const { data } = await axiosInstance.get(
+        `/assets?page=0&page_size=150&subresources=true`
+      );
+
+      return data;
+    } catch (error: any) {
+      console.error(
+        "Error getting all assets:",
+        error.response ? error.response.data : error.message
+      );
+      throw error;
+    }
+  },
+  getAssetById: async (id: string) => {
+    try {
+      const response = await axiosInstance.get(`/assets/${id}`);
+
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Error getting asset:",
+        error.response ? error.response.data : error.message
+      );
+      throw error;
+    }
+  },
+  updateAsset: async (id: string, assetData: any) => {
+    try {
+      console.log("Updating asset:", assetData);
+      const response = await axiosInstance.put(`/assets/${id}`, assetData);
+
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Error updating asset:",
+        error.response ? error.response.data : error.message
+      );
+      throw error;
+    }
+  },
+  deleteAsset: async (id: string) => {
+    try {
+      const response = await axiosInstance.delete(`/assets/${id}`);
+
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Error deleting asset:",
+        error.response ? error.response.data : error.message
+      );
+      throw error;
+    }
+  },
+  deleteFile: async (assetId: string, fileId: string) => {
+    try {
+      const response = await axiosInstance.delete(
+        `/assets/${assetId}/files/${fileId}`
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Error deleting file:",
+        error.response ? error.response.data : error.message
+      );
+      throw error;
+    }
+  },
+  getInfo: async () => {
+    try {
+      const genres = await axiosInstance.get("/miscellaneous/genres");
+      const subgenres = await axiosInstance.get("/miscellaneous/subgenres");
+      const audio_locales = await axiosInstance.get(
+        "/miscellaneous/audio_locales"
+      );
+
+      return {
+        genres: genres.data,
+        subgenres: subgenres.data,
+        audio_locales: audio_locales.data,
+      };
+    } catch (error: any) {
+      console.error(
+        "Error getting info:",
+        error.response ? error.response.data : error.message
+      );
+      throw error;
+    }
+  },
+  updateProductById: async (id: string, productData: any) => {
+    try {
+      const response = await axiosInstance.put(`/products/${id}`, productData);
+
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Error updating product:",
+        error.response ? error.response.data : error.message
+      );
+      throw error;
+    }
+  },
+  getTrends: async (params: GetTrendsParams): Promise<any> => {
+    try {
+      // Usar los datos de ejemplo para tendencias
+      let trendsData = [...FugaMockData.trends.chart];
+      
+      // Aplicar filtros según los parámetros proporcionados
+      if (params.product_id) {
+        // Simular filtrado por producto
+        trendsData = trendsData.map(item => ({
+          ...item,
+          product_id: params.product_id,
+          product_name: `Producto ${params.product_id}`
+        }));
+      }
+      
+      if (params.artist_id) {
+        // Simular filtrado por artista
+        trendsData = trendsData.map(item => ({
+          ...item,
+          artist_id: params.artist_id,
+          artist_name: `Artista ${params.artist_id}`
+        }));
+      }
+      
+      if (params.territory_id) {
+        // Filtrar por territorio si se especifica
+        trendsData = trendsData.filter(item => item.territory === params.territory_id);
+      }
+      
+      // Generar datos adicionales aleatorios para el rango de fechas
+      const startDate = new Date(params.start_date);
+      const endDate = new Date(params.end_date);
+      const dayDiff = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      // Si el rango es mayor a 4 días, generar datos adicionales
+      if (dayDiff > 4) {
+        for (let i = 2; i < Math.min(dayDiff, 10); i++) { // Limitar a 10 días para no generar demasiados datos
+          const currentDate = new Date(startDate);
+          currentDate.setDate(startDate.getDate() + i);
+          const dateString = currentDate.toISOString().split('T')[0];
+          
+          // Añadir datos para Spotify y Apple Music
+          trendsData.push({
+            date: dateString,
+            streams: Math.floor(10000 + Math.random() * 5000),
+            downloads: Math.floor(200 + Math.random() * 200),
+            revenue: parseFloat((80 + Math.random() * 70).toFixed(2)),
+            dsp: "Spotify",
+            territory: "ES"
+          });
+          
+          trendsData.push({
+            date: dateString,
+            streams: Math.floor(7000 + Math.random() * 3000),
+            downloads: Math.floor(150 + Math.random() * 150),
+            revenue: parseFloat((60 + Math.random() * 50).toFixed(2)),
+            dsp: "Apple Music",
+            territory: "ES"
+          });
+        }
+      }
+      
+      return {
+        chart: trendsData,
+        total_streams: trendsData.reduce((sum, item) => sum + (item.streams || 0), 0),
+        total_downloads: trendsData.reduce((sum, item) => sum + (item.downloads || 0), 0),
+        total_revenue: parseFloat(trendsData.reduce((sum, item) => sum + (item.revenue || 0), 0).toFixed(2))
+      };
+    } catch (error: any) {
+      console.error("Error obteniendo datos de tendencias de ejemplo");
+      throw error;
+    }
+  },
+  uploadCover: async (productId: string, file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await axiosInstance.post(
+        `/products/${productId}/cover`,
+        formData
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Error uploading cover:",
+        error.response ? error.response.data : error.message
+      );
+      throw error;
+    }
+  },
+  detachAsset: async (productId: string, assetId: string) => {
+    try {
+      const response = await axiosInstance.delete(
+        `/products/${productId}/assets/${assetId}`
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Error detaching asset:",
+        error.response ? error.response.data : error.message
+      );
+      throw error;
+    }
+  },
+  generateUPC: async (productId: string) => {
+    try {
+      // Buscar el producto en los datos de ejemplo
+      const product = FugaMockData.products.find(p => p.id.toString() === productId);
+      
+      if (!product) {
+        throw new Error("Producto no encontrado");
+      }
+      
+      // Generar un UPC aleatorio
+      const upc = FugaMockData.generateRandomUPC();
+      
+      // Devolver el producto con el nuevo UPC
+      return {
+        ...product,
+        upc: upc
+      };
+    } catch (error: any) {
+      console.error("Error generando UPC de ejemplo");
+      throw error;
+    }
+  },
+  generateISCR: async (assetId: string) => {
+    try {
+      // Buscar el asset en los datos de ejemplo
+      const asset = FugaMockData.assets.find(a => a.id.toString() === assetId);
+      
+      if (!asset) {
+        throw new Error("Asset no encontrado");
+      }
+      
+      // Generar un ISRC aleatorio
+      const isrc = FugaMockData.generateRandomISRC();
+      
+      // Devolver el asset con el nuevo ISRC
+      return {
+        ...asset,
+        isrc: isrc
+      };
+    } catch (error: any) {
+      console.error("Error generando ISRC de ejemplo");
+      throw error;
+    }
+  },
+};
+
+axiosInstance.interceptors.request.use(
+  async (config) => {
+    try {
+      await dbConnect();
+
+      let tokenRecord = await ApiToken.findOne();
+
+      if (!tokenRecord || tokenRecord.expiresAt < new Date()) {
+        const newToken = await FugaAPI.getToken();
+        const newExpiry = new Date(Date.now() + 30 * 60 * 1000);
+
+        if (tokenRecord) {
+          // Update existing token record
+          tokenRecord.token = newToken;
+          tokenRecord.expiresAt = newExpiry;
+          await tokenRecord.save();
+        } else {
+          tokenRecord = new ApiToken({
+            token: newToken,
+            expiresAt: newExpiry,
+          });
+          await tokenRecord.save();
+        }
+      }
+
+      config.headers["Cookie"] = `connect.sid=${tokenRecord.token}`;
+    } catch (error: any) {
+      console.error("Error in request interceptor:", error.message);
+      throw error;
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
